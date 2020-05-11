@@ -10,7 +10,8 @@ let colors = ["red", "blue"/*, "lime", "yellow", "magenta", "cyan"*/];
 let activePiece = null;
 let actionOccupied = false;
 let boardSize = [6, 12]
-let insertPosition = [3, 0];
+let insertPosition = [2, 0];
+let points = 0;
 
 function init() {
     canvas = document.getElementById("canvas");
@@ -35,6 +36,12 @@ function createBoard() {
         }
     }
     return board;
+}
+
+
+function drawPointCount() {
+    ctx.fillStyle = "black";
+    ctx.fillText("Points: " + points,10, 10);
 }
 
 
@@ -110,6 +117,7 @@ function drawBoard(matches) {
     ctx.lineWidth = 0;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawPointCount();
     drawBoardFrame();
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
@@ -427,7 +435,6 @@ function popMatches(matches) {
     for (let i = 0; i < matches.length; i++) {
         board[matches[i][0]][matches[i][1]] = 0;
     }
-    pointSound(1);
 }
 
 
@@ -461,10 +468,52 @@ function pointSound(effectNum) {
 }
 
 
+function soundByPoints(points) {
+    if (points < 4) {
+        pointSound(1);
+    }
+    else if (points < 16) {
+        pointSound(2);
+    }
+    else {
+        pointSound(3);
+    }
+}
+
+
+function calculatePoints(matches, points, chain) {
+    return Math.max(points, 1) * Math.ceil(matches.length / 6) * Math.max(4 * chain, 1);
+}
+
+
 async function run() {
     init();
     let i = 0;
     let currentMatches = [];
+    let collapsingMatches = false;
+    let popPoints = 0;
+    let popChain = 0;
+
+    function collapseMatches() {
+        popPoints = calculatePoints(currentMatches, popPoints, popChain);
+        popMatches(currentMatches);
+        soundByPoints(popPoints);
+        popChain++;
+        console.log("points: " + popPoints);
+        console.log("chain: " + popChain);
+        currentMatches = [];
+        updateBoard();
+        let newMatches = findMatches();
+        for (let i = 0; i < newMatches.length; i++) {
+            currentMatches.push(newMatches[i]);
+        }
+        if (currentMatches.length === 0)
+        {
+            points += popPoints;
+            collapsingMatches = false;
+            return perSecondLoop();
+        }
+    }
 
     function perSecondLoop() {
         if (activePiece !== null) {
@@ -481,20 +530,16 @@ async function run() {
                 activePiece = null;
                 actionOccupied = null;
             }
-            return true;
         }
         if (!actionOccupied) {
             if (currentMatches.length > 0) {
-                popMatches(currentMatches);
-                currentMatches = [];
-                updateBoard();
-                let newMatches = findMatches();
-                for (let i = 0; i < newMatches.length; i++) {
-                    currentMatches.push(newMatches[i]);
-                }
+                collapsingMatches = true;
+                collapseMatches();
             }
             else if (board[insertPosition[0]][insertPosition[1]] === 0 && board[insertPosition[0]][insertPosition[1]+1] === 0) {
                 activePiece = insertPiece(generatePiece());
+                popPoints = 0;
+                popChain = 0;
                 actionOccupied = true;
             }
             else {
