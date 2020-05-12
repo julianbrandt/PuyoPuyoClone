@@ -6,16 +6,18 @@ let matchBoard;
 let boardFrameCoords = {x: 10, y: 100};
 let boardFrameWidth = 5;
 let boardLineWidth = 2;
-let colors = ["red", "blue"/*, "lime", "yellow", "magenta", "cyan"*/];
+let colors = ["red", "blue", "lime", "yellow", "magenta", "cyan"];
 let activePiece = null;
 let actionOccupied = false;
 let boardSize = [6, 12]
 let insertPosition = [2, 0];
 let points = 0;
+let nextPiece = generatePiece();
 
 function init() {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
+    ctx.font = "12px Arial";
     board = createBoard();
 }
 
@@ -41,7 +43,15 @@ function createBoard() {
 
 function drawPointCount() {
     ctx.fillStyle = "black";
-    ctx.fillText("Points: " + points,10, 10);
+    ctx.fillText("Points: " + points,boardSize[0] * squareSize + 20, 110);
+}
+
+
+function drawNextPiece() {
+    ctx.fillStyle = "black";
+    ctx.fillText("Next",boardSize[0] * squareSize + 20, 150);
+    drawSquare(boardSize[0] * squareSize + 20, 160, nextPiece.a.color);
+    drawSquare(boardSize[0] * squareSize + 20, 160 + squareSize, nextPiece.b.color);
 }
 
 
@@ -118,6 +128,7 @@ function drawBoard(matches) {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawPointCount();
+    drawNextPiece();
     drawBoardFrame();
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
@@ -174,6 +185,9 @@ function closer(piece, direction) {
         case "right":
             if (piece.a.pos[0] >= piece.b.pos[0]) return piece.a;
             else return piece.b;
+        case "up":
+            if (piece.a.pos[1] <= piece.b.pos[1]) return piece.a;
+            else return piece.b
         case "down":
             if (piece.a.pos[1] >= piece.b.pos[1]) return piece.a;
             else return piece.b;
@@ -210,7 +224,7 @@ function emptyInDirection(piece, direction) {
                 piece.a.pos[1] < boardSize[1] &&
                 board[piece.a.pos[0]][piece.a.pos[1] + 1] === 0 &&
                 board[piece.b.pos[0]][piece.b.pos[1] + 1] === 0
-            ) return true
+            ) return true;
             else {
                 return (
                     piece.direction === "vertical" &&
@@ -223,7 +237,7 @@ function emptyInDirection(piece, direction) {
                 piece.direction === "horizontal" &&
                 closer(piece, "right").pos[0] + 1 < boardSize[0] &&
                 board[closer(piece, "right").pos[0] + 1][closer(piece, "right").pos[1]] === 0
-            ) return true
+            ) return true;
             else
                 return (
                     piece.direction === "vertical" &&
@@ -236,7 +250,7 @@ function emptyInDirection(piece, direction) {
                 piece.direction === "horizontal" &&
                 closer(piece, "left").pos[0] > 0 &&
                 board[closer(piece, "left").pos[0] - 1][closer(piece, "left").pos[1]] === 0
-            ) return true
+            ) return true;
             else
                 return (
                     piece.direction === "vertical" &&
@@ -445,6 +459,10 @@ function updateBoard() {
             let firstEmpty = null;
             for (let j = boardSize[1]-1; j >= 0; j--) {
                 if (board[i][j] === 0 && firstEmpty === null) {
+                    if (j === 0) {
+                        running = false;
+                        break;
+                    }
                     firstEmpty = j;
                 }
                 else if (board[i][j] !== 0 && firstEmpty !== null) {
@@ -452,7 +470,7 @@ function updateBoard() {
                     board[i][j] = 0;
                     break;
                 }
-                else if (j === 0 && board[i][j] === 0) {
+                else if (j === 0) {
                     running = false;
                     break;
                 }
@@ -464,6 +482,7 @@ function updateBoard() {
 
 function pointSound(effectNum) {
     let sfx = new Audio("sounds/pop" + effectNum + ".wav");
+    sfx.volume = 0.3;
     sfx.play();
 }
 
@@ -537,7 +556,8 @@ async function run() {
                 collapseMatches();
             }
             else if (board[insertPosition[0]][insertPosition[1]] === 0 && board[insertPosition[0]][insertPosition[1]+1] === 0) {
-                activePiece = insertPiece(generatePiece());
+                activePiece = insertPiece(nextPiece);
+                nextPiece = generatePiece();
                 popPoints = 0;
                 popChain = 0;
                 actionOccupied = true;
