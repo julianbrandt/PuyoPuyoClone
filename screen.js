@@ -6,7 +6,7 @@ let matchBoard;
 let boardFrameCoords = {x: 10, y: 100};
 let boardFrameWidth = 5;
 let boardLineWidth = 2;
-let colors = ["red", "blue", "lime", "yellow", "magenta", "cyan"];
+let colors = ["Crimson", "DodgerBlue", "LimeGreen", "Gold", "MediumSlateBlue"];
 let activePiece = null;
 let actionOccupied = false;
 let boardSize = [6, 12]
@@ -487,11 +487,11 @@ function pointSound(effectNum) {
 }
 
 
-function soundByPoints(points) {
-    if (points < 4) {
+function soundByPoints(chain) {
+    if (chain === 0) {
         pointSound(1);
     }
-    else if (points < 16) {
+    else if (chain === 1) {
         pointSound(2);
     }
     else {
@@ -516,7 +516,7 @@ async function run() {
     function collapseMatches() {
         popPoints = calculatePoints(currentMatches, popPoints, popChain);
         popMatches(currentMatches);
-        soundByPoints(popPoints);
+        soundByPoints(popChain);
         popChain++;
         console.log("points: " + popPoints);
         console.log("chain: " + popChain);
