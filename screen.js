@@ -508,18 +508,19 @@ function calculatePoints(matches, points, chain) {
 async function run() {
     init();
     let i = 0;
+    let moveTick = 0;
     let currentMatches = [];
     let collapsingMatches = false;
     let popPoints = 0;
     let popChain = 0;
+    let fps = 30;
+    let speedUpTick = fps - 1;
 
     function collapseMatches() {
         popPoints = calculatePoints(currentMatches, popPoints, popChain);
         popMatches(currentMatches);
         soundByPoints(popChain);
         popChain++;
-        console.log("points: " + popPoints);
-        console.log("chain: " + popChain);
         currentMatches = [];
         updateBoard();
         let newMatches = findMatches();
@@ -530,11 +531,15 @@ async function run() {
         {
             points += popPoints;
             collapsingMatches = false;
+            if (speedUpTick > 1) {
+                speedUpTick *= 0.9;
+            }
             return perSecondLoop();
         }
     }
 
-    function perSecondLoop() {
+
+    function moveDown() {
         if (activePiece !== null) {
             if (emptyInDirection(activePiece, "down")) {
                 activePiece = attemptMovePiece(activePiece, "down");
@@ -548,12 +553,16 @@ async function run() {
                 }
                 activePiece = null;
                 actionOccupied = null;
+                return perSecondLoop();
             }
         }
+    }
+
+
+    function perSecondLoop() {
         if (!actionOccupied) {
             if (currentMatches.length > 0) {
                 collapsingMatches = true;
-                collapseMatches();
             }
             else if (board[insertPosition[0]][insertPosition[1]] === 0 && board[insertPosition[0]][insertPosition[1]+1] === 0) {
                 activePiece = insertPiece(nextPiece);
@@ -561,6 +570,7 @@ async function run() {
                 popPoints = 0;
                 popChain = 0;
                 actionOccupied = true;
+                i = 0;
             }
             else {
                 return false;
@@ -579,8 +589,20 @@ async function run() {
             }
             perSecondLoop();
         }
+
+        if (i === 15) {
+            if (collapsingMatches) {
+                collapseMatches();
+            }
+        }
+
+        if (moveTick === Math.floor(speedUpTick)) {
+            moveDown();
+        }
         await sleep(33);
         i++;
-        if (i > 30) i = 0;
+        if (i >= fps) i = 0;
+        moveTick++;
+        if (moveTick > speedUpTick) moveTick = 0;
     }
 }
