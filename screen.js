@@ -11,8 +11,10 @@ let activePiece = null;
 let actionOccupied = false;
 let boardSize = [6, 12]
 let insertPosition = [2, 0];
+let popChainPointTable = [1, 8, 16, 32, 64, 128, 256, 512, 999];
 let points = 0;
 let nextPiece = generatePiece();
+let movingDown = false;
 
 function init() {
     canvas = document.getElementById("canvas");
@@ -210,9 +212,12 @@ function pressedRight() {
 
 
 function pressedDown() {
-    if (activePiece !== null) {
-        attemptMovePiece(activePiece, "down");
-    }
+    movingDown = true;
+}
+
+
+function liftedDown() {
+    movingDown = false;
 }
 
 
@@ -449,6 +454,7 @@ function popMatches(matches) {
     for (let i = 0; i < matches.length; i++) {
         board[matches[i][0]][matches[i][1]] = 0;
     }
+    return matches.length;
 }
 
 
@@ -500,8 +506,16 @@ function soundByPoints(chain) {
 }
 
 
-function calculatePoints(matches, points, chain) {
-    return Math.max(points, 1) * Math.ceil(matches.length / 6) * Math.max(4 * chain, 1);
+function calculatePoints(pops, popChain) {
+    if (popChain > 8) {
+        popChain = 8;
+    }
+    return pops * 10 * popChainPointTable[popChain];
+}
+
+
+function formatPointIncrement(pops, popChain) {
+    return pops * 10 + "x" + popChainPointTable[popChain];
 }
 
 
@@ -517,8 +531,9 @@ async function run() {
     let speedUpTick = fps - 1;
 
     function collapseMatches() {
-        popPoints = calculatePoints(currentMatches, popPoints, popChain);
-        popMatches(currentMatches);
+        let pops = popMatches(currentMatches);
+        points += calculatePoints(pops, popChain);
+        formatPointIncrement();
         soundByPoints(popChain);
         popChain++;
         currentMatches = [];
@@ -529,12 +544,10 @@ async function run() {
         }
         if (currentMatches.length === 0)
         {
-            points += popPoints;
             collapsingMatches = false;
             if (speedUpTick > 1) {
                 speedUpTick *= 0.9;
             }
-            return perSecondLoop();
         }
     }
 
@@ -553,7 +566,6 @@ async function run() {
                 }
                 activePiece = null;
                 actionOccupied = null;
-                return perSecondLoop();
             }
         }
     }
@@ -566,6 +578,7 @@ async function run() {
             }
             else if (board[insertPosition[0]][insertPosition[1]] === 0 && board[insertPosition[0]][insertPosition[1]+1] === 0) {
                 activePiece = insertPiece(nextPiece);
+                moveTick = 0;
                 nextPiece = generatePiece();
                 popPoints = 0;
                 popChain = 0;
@@ -596,13 +609,19 @@ async function run() {
             }
         }
 
+        if (movingDown && activePiece !== null) {
+            moveDown();
+            points += 1;
+        }
+
+        moveTick++;
         if (moveTick === Math.floor(speedUpTick)) {
             moveDown();
         }
-        await sleep(33);
+        if (moveTick === Math.floor(speedUpTick)) moveTick = 0;
         i++;
         if (i >= fps) i = 0;
-        moveTick++;
-        if (moveTick > speedUpTick) moveTick = 0;
+
+        await sleep(33);
     }
 }
