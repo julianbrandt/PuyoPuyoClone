@@ -326,18 +326,25 @@ function rotate(piece) {
         }
         else {
             if (emptyInDirection(piece, "left")) {
-                piece.a.pos[0] = piece.a.pos[0] - 1;
-                piece.a.pos[1] = piece.a.pos[1] - 1;
-                piece.direction = "horizontal";
-            }
-            else {
-                if (emptyInDirectionSingle(piece.b, "right")) {
-                    piece.b.pos[0] = piece.b.pos[0] + 1;
+                if (emptyInDirection(piece, "down")) {
+                    piece.a.pos[0] = piece.a.pos[0] - 1;
                     piece.a.pos[1] = piece.a.pos[1] - 1;
                     piece.direction = "horizontal";
                 }
-                else if (emptyInDirectionSingle(piece.b, "left")) {
+                else {
                     piece.a.pos[0] = piece.a.pos[0] - 1;
+                    piece.b.pos[1] = piece.b.pos[1] + 1;
+                    piece.direction = "horizontal";
+                }
+            }
+            else {
+                if (emptyInDirectionSingle(piece.b, "left")) {
+                    piece.a.pos[0] = piece.a.pos[0] - 1;
+                    piece.a.pos[1] = piece.a.pos[1] - 1;
+                    piece.direction = "horizontal";
+                }
+                else if (emptyInDirectionSingle(piece.b, "right")) {
+                    piece.b.pos[0] = piece.b.pos[0] + 1;
                     piece.a.pos[1] = piece.a.pos[1] - 1;
                     piece.direction = "horizontal";
                 }
