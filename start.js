@@ -20,6 +20,7 @@ function keydown(e) {
         }
         if (`${e.code}` === "ArrowUp") {
             rotate(activePiece);
+            activePiece.rotating = true;
         }
         if (`${e.code}` === "ArrowDown") {
             pressedDown();

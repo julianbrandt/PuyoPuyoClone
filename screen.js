@@ -92,19 +92,23 @@ function randomColor() {
 
 
 function generatePiece() {
-    return {
+    let piece = {
         a: {
-            piece: this,
+            piece: null,
             color: randomColor(),
             pos: [null, null],
         },
         b: {
-            piece: this,
+            piece: null,
             color: randomColor(),
             pos: [null, null]
         },
-        direction: "vertical"
-    }
+        direction: "vertical",
+        rotating: false
+    };
+    piece.a.piece = piece;
+    piece.b.piece = piece;
+    return piece;
 }
 
 
@@ -139,8 +143,19 @@ function drawBoard(matches) {
                     let coords = coordFromSquare(i, j);
                     drawSquare(coords[0], coords[1], board[i][j]);
                 }
-                let coords = coordFromSquare(i, j);
-                drawSquare(coords[0], coords[1], board[i][j].color);
+                else {
+                    let coords = coordFromSquare(i, j);
+                    let offSet = [0, 0];
+                    let piece = board[i][j].piece;
+                    if (piece.a === board[i][j]) {
+                        if (piece.rotating) {
+                            let offSetQualifier = postRotationOffsets(piece);
+                            offSet = [offSetQualifier[0] * squareSize, offSetQualifier[1] * squareSize];
+                            piece.rotating = false;
+                        }
+                    }
+                    drawSquare(coords[0] + offSet[0], coords[1] + offSet[1], board[i][j].color)
+                }
             }
         }
     }
@@ -343,6 +358,11 @@ function rotate(piece) {
                     piece.a.pos[1] = piece.a.pos[1] - 1;
                     piece.direction = "horizontal";
                 }
+                else if (emptyInDirectionSingle(piece.a, "right")) {
+                    piece.b.pos[0] = piece.b.pos[0] + 1;
+                    piece.b.pos[1] = piece.b.pos[1] + 1;
+                    piece.direction = "horizontal";
+                }
                 else if (emptyInDirectionSingle(piece.b, "right")) {
                     piece.b.pos[0] = piece.b.pos[0] + 1;
                     piece.a.pos[1] = piece.a.pos[1] - 1;
@@ -386,6 +406,26 @@ function rotate(piece) {
     board[piece.b.pos[0]][piece.b.pos[1]] = piece.b;
 
     return piece;
+}
+
+
+function postRotationOffsets(piece) {
+    if (piece.direction === "vertical") {
+        if (piece.a.pos[1] < piece.b.pos[1]) {
+            return [-0.707, 0.293];
+        }
+        else {
+            return [0.293, -0.707];
+        }
+    }
+    else {
+        if (piece.a.pos[0] < piece.b.pos[0]) {
+            return [0.293, 0.293];
+        }
+        else {
+            return [-0.707, -0.707];
+        }
+    }
 }
 
 
