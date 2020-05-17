@@ -19,8 +19,10 @@ function keydown(e) {
             pressedLeft();
         }
         if (`${e.code}` === "ArrowUp") {
-            rotate(activePiece);
-            activePiece.rotating = true;
+            if (activePiece !== null) {
+                rotate(activePiece);
+                activePiece.rotating = true;
+            }
         }
         if (`${e.code}` === "ArrowDown") {
             pressedDown();
