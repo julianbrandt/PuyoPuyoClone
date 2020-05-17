@@ -501,15 +501,7 @@ function pointSound(effectNum) {
 
 
 function soundByPoints(chain) {
-    if (chain === 0) {
-        pointSound(1);
-    }
-    else if (chain === 1) {
-        pointSound(2);
-    }
-    else {
-        pointSound(3);
-    }
+    pointSound(Math.min(7, chain+1));
 }
 
 
