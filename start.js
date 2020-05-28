@@ -1,37 +1,10 @@
-run();
+init();
 
 document.addEventListener('keydown', keydown);
 document.addEventListener('keyup', keyup);
-function keydown(e) {
-    if (e.repeat) {
-        if (`${e.code}` === "ArrowRight") {
-            pressedRight();
-        }
-        if (`${e.code}` === "ArrowLeft") {
-            pressedLeft();
-        }
-    }
-    else {
-        if (`${e.code}` === "ArrowRight") {
-            pressedRight();
-        }
-        if (`${e.code}` === "ArrowLeft") {
-            pressedLeft();
-        }
-        if (`${e.code}` === "ArrowUp") {
-            if (activePiece !== null) {
-                rotate(activePiece);
-                activePiece.rotating = true;
-            }
-        }
-        if (`${e.code}` === "ArrowDown") {
-            pressedDown();
-        }
-    }
-}
+canvas.ontouchstart = function (e) {touchstart(e)};
+canvas.ontouchend = function (e) {touchend(e)};
+canvas.ontouchmove = function (e) {touchmove(e)};
 
-function keyup(e) {
-    if (`${e.code}` === "ArrowDown") {
-        liftedDown();
-    }
-}
+
+run();
