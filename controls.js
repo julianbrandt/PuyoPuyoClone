@@ -40,44 +40,54 @@ function keyup(e) {
 }
 
 
-function touchCoordOnBoard (x, y) {
-    x -= canvas.getBoundingClientRect().left;
-    y -= canvas.getBoundingClientRect().top;
-
+function screenCoordToCanvasCoord (x, y) {
+    x = Math.floor(x - canvas.getBoundingClientRect().left);
+    y = Math.floor(y - canvas.getBoundingClientRect().top);
     return [x, y];
 }
 
 
 function touchstart(e) {
+    if (activePiece === null) return;
     let touches = e.touches;
-    console.log([touches[0].pageX, touches[0].pageY]);
-    console.log(squareOfCanvasCoord(touches[0].clientX, touches[0].clientY));
-    if (coordOnActivePiece(touches[0].clientX, touches[0].clientY)) {
-        draggingPiece = true;
-        console.log("dragging piece = true");
+    let canvasCoords = screenCoordToCanvasCoord(touches[0].clientX, touches[0].clientY);
+    if (coordOnActivePiece(canvasCoords[0], canvasCoords[1])) {
+        touchedActivePiece = true;
     }
+
 }
 
 
 function touchend(e) {
-    draggingPiece = false;
+    if (!touchMoved) {
+        rotate(activePiece);
+    }
+    touchMoved = false
+    touchedActivePiece = false
 }
 
 
 function touchmove(e) {
+    if (activePiece === null || !touchedActivePiece) {
+        e.touches = [];
+        return;
+    }
     let touches = e.touches;
-    if (draggingPiece) {
-        let closestLeft = closer(activePiece, "left");
-        let closestRight = closer(activePiece, "right");
-        if (squareOfCanvasCoord(touches[0], touches[1])[0] < closestLeft.pos[0]) {
-            attemptMovePiece(activePiece, "left");
-        }
-        else if (squareOfCanvasCoord(touches[0], touches[1])[0] > closestRight.pos[0]) {
-            attemptMovePiece(activePiece, "right");
-        }
-        let closestDown = closer(activePiece, "down");
-        if (squareOfCanvasCoord(touches[0], touches[1])[1] > closestDown.pos[1]) {
-            attemptMovePiece(activePiece, "down");
-        }
+    let closestLeft = closer(activePiece, "left");
+    let closestRight = closer(activePiece, "right");
+    let canvasCoords = screenCoordToCanvasCoord(touches[0].clientX, touches[0].clientY);
+    let touchedSquare = squareOfCanvasCoord(canvasCoords[0], canvasCoords[1]);
+    if (touchedSquare[0] < closestLeft.pos[0]) {
+        attemptMovePiece(activePiece, "left");
+        touchMoved = true;
+    }
+    else if (touchedSquare[0] > closestRight.pos[0]) {
+        attemptMovePiece(activePiece, "right");
+        touchMoved = true;
+    }
+    let closestDown = closer(activePiece, "down");
+    if (touchedSquare[1] > closestDown.pos[1]) {
+        attemptMovePiece(activePiece, "down");
+        touchMoved = true;
     }
 }

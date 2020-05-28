@@ -15,7 +15,8 @@ let popChainPointTable = [1, 8, 16, 32, 64, 128, 256, 512, 999];
 let points = 0;
 let nextPiece = generatePiece();
 let movingDown = false;
-let draggingPiece = false;
+let touchedActivePiece = false;
+let touchMoved = false;
 
 function init() {
     canvas = document.getElementById("canvas");
@@ -135,13 +136,14 @@ function squareOfCanvasCoord(x, y) {
     y -= boardFrameCoords.y
     x = Math.floor(x / squareSize);
     y = Math.floor(y / squareSize);
-
     return [x, y];
 }
 
 
 function coordOnActivePiece(x, y) {
-    return (squareOfCanvasCoord(x, y) === activePiece.a.pos || squareOfCanvasCoord(x, y) === activePiece.b.pos);
+    let square = squareOfCanvasCoord(x, y);
+    return (square[0] === activePiece.a.pos[0] && square[1] === activePiece.a.pos[1] ||
+        square[0] === activePiece.b.pos[0] && square[1] === activePiece.b.pos[1]);
 }
 
 
@@ -637,6 +639,8 @@ async function run() {
                 popPoints = 0;
                 popChain = 0;
                 actionOccupied = true;
+                touchedActivePiece = false;
+                touchMoved = false;
                 i = 0;
             }
             else {
