@@ -1,6 +1,5 @@
-let ctx, canvas, squareSize, board, matchBoard, boardFrameCoords;
+let ctx, canvas, squareSize, board, matchBoard, boardFrameCoords, sidebarWidth;
 let canvasPadding = 3;
-let sidebarWidth = 80;
 let squareLineWidth = 2;
 let boardFrameWidth = 2;
 let boardLineWidth = 2;
@@ -8,7 +7,7 @@ let colors = ["Crimson", "DodgerBlue", "LimeGreen", "Gold", "MediumSlateBlue"];
 let activePiece = null;
 let actionOccupied = false;
 let boardSize = [6, 12]
-let insertPosition = [2, 0];
+let insertPosition = [Math.floor((boardSize[0]-1)/2), 0];
 let popChainPointTable = [1, 8, 16, 32, 64, 128, 256, 512, 999];
 let points = 0;
 let nextPiece = generatePiece();
@@ -23,13 +22,17 @@ function setCanvasSize() {
 }
 
 
+function setSidebarWidth() {
+    sidebarWidth = canvas.width / boardSize[0] * 1.1;
+}
+
+
 function setSquareSize() {
     let widthWithoutSidebar = canvas.width - sidebarWidth;
     if ((widthWithoutSidebar / boardSize[0]) * boardSize[1] > canvas.height - canvasPadding * 2) {
         squareSize = (canvas.height - canvasPadding * 2) / boardSize[1];
     }
     else {
-        console.log("making space for sidebar");
         squareSize = widthWithoutSidebar / boardSize[0];
     }
 }
@@ -44,17 +47,19 @@ function setBoardFrameCoords() {
 
 
 function setSizeVariables() {
+    console.log("settings size variables");
     setCanvasSize();
+    setSidebarWidth();
     setSquareSize();
     setBoardFrameCoords();
+    ctx.font = (12 + canvas.height / 100) + "px Arial";
 }
 
 
 function init() {
     canvas = document.getElementById("canvas");
-    setSizeVariables();
     ctx = canvas.getContext("2d");
-    ctx.font = "12px Arial";
+    setSizeVariables();
     board = createBoard();
 }
 
@@ -80,7 +85,7 @@ function createBoard() {
 
 function drawPointCount(x, y) {
     ctx.fillStyle = "black";
-    ctx.fillText("Points: " + points,x, y);
+    ctx.fillText("Pts: " + points,x, y);
 }
 
 
