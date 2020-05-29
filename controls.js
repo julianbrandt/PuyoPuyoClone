@@ -68,8 +68,12 @@ function touchend(e) {
 
 
 function touchmove(e) {
-    if (activePiece === null || !touchedActivePiece) {
+    if (activePiece === null) {
         e.touches = [];
+        return;
+    }
+    if (!touchedActivePiece) {
+        touchstart(e);
         return;
     }
     let touches = e.touches;
