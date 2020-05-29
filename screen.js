@@ -1,10 +1,8 @@
-let ctx, canvas;
-let squareSize = 36;
+let ctx, canvas, squareSize, board, matchBoard, boardFrameCoords;
+let canvasPadding = 3;
+let sidebarWidth = 80;
 let squareLineWidth = 2;
-let board;
-let matchBoard;
-let boardFrameCoords = {x: 10, y: 100};
-let boardFrameWidth = 5;
+let boardFrameWidth = 2;
 let boardLineWidth = 2;
 let colors = ["Crimson", "DodgerBlue", "LimeGreen", "Gold", "MediumSlateBlue"];
 let activePiece = null;
@@ -18,8 +16,43 @@ let movingDown = false;
 let touchedActivePiece = false;
 let touchMoved = false;
 
+
+function setCanvasSize() {
+    canvas.width = document.body.offsetWidth;
+    canvas.height = document.body.offsetHeight;
+}
+
+
+function setSquareSize() {
+    let widthWithoutSidebar = canvas.width - sidebarWidth;
+    if ((widthWithoutSidebar / boardSize[0]) * boardSize[1] > canvas.height - canvasPadding * 2) {
+        squareSize = (canvas.height - canvasPadding * 2) / boardSize[1];
+    }
+    else {
+        console.log("making space for sidebar");
+        squareSize = widthWithoutSidebar / boardSize[0];
+    }
+}
+
+
+function setBoardFrameCoords() {
+    boardFrameCoords = {
+        x: (canvas.width - (boardSize[0] * squareSize + sidebarWidth))/2,
+        y: (canvas.height - boardSize[1] * squareSize + canvasPadding)/2
+    };
+}
+
+
+function setSizeVariables() {
+    setCanvasSize();
+    setSquareSize();
+    setBoardFrameCoords();
+}
+
+
 function init() {
     canvas = document.getElementById("canvas");
+    setSizeVariables();
     ctx = canvas.getContext("2d");
     ctx.font = "12px Arial";
     board = createBoard();
@@ -45,17 +78,25 @@ function createBoard() {
 }
 
 
-function drawPointCount() {
+function drawPointCount(x, y) {
     ctx.fillStyle = "black";
-    ctx.fillText("Points: " + points,boardSize[0] * squareSize + 20, 110);
+    ctx.fillText("Points: " + points,x, y);
 }
 
 
-function drawNextPiece() {
+function drawNextPiece(x, y) {
     ctx.fillStyle = "black";
-    ctx.fillText("Next",boardSize[0] * squareSize + 20, 150);
-    drawSquare(boardSize[0] * squareSize + 20, 160, nextPiece.a.color);
-    drawSquare(boardSize[0] * squareSize + 20, 160 + squareSize, nextPiece.b.color);
+    ctx.fillText("Next",x, y);
+    drawSquare(x, y + 10, nextPiece.a.color);
+    drawSquare(x, y + 10 + squareSize, nextPiece.b.color);
+}
+
+
+function drawSidebar() {
+    let x = boardFrameCoords.x + boardSize[0] * squareSize + 10;
+    let y = boardFrameCoords.y + 30;
+    drawPointCount(x, y);
+    drawNextPiece(x, y + 40);
 }
 
 
@@ -151,8 +192,7 @@ function drawBoard(matches) {
     ctx.lineWidth = 0;
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawPointCount();
-    drawNextPiece();
+    drawSidebar();
     drawBoardFrame();
     for (let i = 0; i < board.length; i++) {
         for (let j = 0; j < board[i].length; j++) {
@@ -602,9 +642,10 @@ async function run() {
         {
             collapsingMatches = false;
             if (speedUpTick > 1) {
-                speedUpTick *= 0.9;
+                speedUpTick = Math.max(speedUpTick * 0.9, 1);
             }
         }
+        moveTick = 0;
     }
 
 
@@ -622,6 +663,7 @@ async function run() {
                 }
                 activePiece = null;
                 actionOccupied = null;
+                i = 0;
             }
         }
     }
@@ -675,8 +717,8 @@ async function run() {
         moveTick++;
         if (moveTick === Math.floor(speedUpTick)) {
             moveDown();
+            moveTick = 0;
         }
-        if (moveTick === Math.floor(speedUpTick)) moveTick = 0;
         i++;
         if (i >= fps) i = 0;
 
