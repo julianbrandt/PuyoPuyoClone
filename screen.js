@@ -63,6 +63,7 @@ function setSizeVariables() {
     setSquareSize();
     setBoardFrameCoords();
     ctx.font = (12 + canvas.height / 100) + "px Arial";
+    drawBoardFrame();
 }
 
 
@@ -70,6 +71,13 @@ function init() {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
     setGameVariables();
+    setSizeVariables();
+    board = createBoard();
+}
+
+
+function reInit() {
+    setGameVariables(boardSize, insertPosition, popChainPointTable, colors);
     setSizeVariables();
     board = createBoard();
 }
@@ -122,21 +130,21 @@ function drawBoardFrame() {
     ctx.strokeRect(
         boardFrameCoords.x,
         boardFrameCoords.y,
-        board.length * squareSize,
-        board[0].length * squareSize
+        boardSize[0] * squareSize,
+        boardSize[1] * squareSize
     );
     ctx.lineWidth = boardLineWidth;
     ctx.beginPath();
-    for (let i = 1; i < board.length; i++) {
+    for (let i = 1; i < boardSize[0]; i++) {
         let x = boardFrameCoords.x + squareSize * i;
         let startY = boardFrameCoords.y;
-        let endY = boardFrameCoords.y + squareSize * board[0].length;
+        let endY = boardFrameCoords.y + squareSize * boardSize[1];
         ctx.moveTo(x, startY);
         ctx.lineTo(x, endY);
     }
-    for (let i = 1; i < board[0].length; i++) {
+    for (let i = 1; i < boardSize[1]; i++) {
         let startX = boardFrameCoords.x;
-        let endX = boardFrameCoords.x + squareSize * board.length;
+        let endX = boardFrameCoords.x + squareSize * boardSize[0];
         let y = boardFrameCoords.y + squareSize * i;
         ctx.moveTo(startX, y);
         ctx.lineTo(endX, y);
@@ -177,8 +185,8 @@ function drawBoard(matches) {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawSidebar();
     drawBoardFrame();
-    for (let i = 0; i < board.length; i++) {
-        for (let j = 0; j < board[i].length; j++) {
+    for (let i = 0; i < boardSize[0]; i++) {
+        for (let j = 0; j < boardSize[1]; j++) {
             if (board[i][j] !== 0) {
                 if (typeof board[i][j] === "string") {
                     let coords = coordFromSquare(i, j);

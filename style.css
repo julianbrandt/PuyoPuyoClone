@@ -12,7 +12,7 @@ body {
 .menu {
     z-index: 1;
     position: absolute;
-    background-color: #ffffff90;
+    background-color: #ffffffb0;
     margin: 0;
     padding: 40px;
     display: flex;
@@ -53,4 +53,35 @@ body {
     background-color: #ccc;
     color: #eee;
     cursor: auto;
+}
+
+
+.nested-setting {
+    width: 100%;
+    padding: 10px 30px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+    background-color: #666;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+
+.nested-setting > label {
+    font-size: 24px;
+    font-family: Arial, sans-serif;
+    color: #fff;
+}
+
+
+.background-title {
+    font-size: 10vw;
+    position: absolute;
+    z-index: 0;
+    font-family: Arial, sans-serif;
+    font-weight: bolder;
+    transform: rotate(20deg);
+    user-select: none;
 }

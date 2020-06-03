@@ -95,3 +95,15 @@ function touchmove(e) {
         touchMoved = true;
     }
 }
+
+
+function boardWidthChanged() {
+    boardSize[0] = document.getElementById("width_slider").value;
+    reInit();
+}
+
+
+function boardHeightChanged() {
+    boardSize[1] = document.getElementById("height_slider").value;
+    reInit();
+}
