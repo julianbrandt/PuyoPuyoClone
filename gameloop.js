@@ -27,6 +27,7 @@ async function run() {
                 speedUpTick = Math.max(speedUpTick * 0.9, 1);
             }
         }
+        i = 16;
         moveTick = 0;
     }
 
@@ -45,7 +46,7 @@ async function run() {
                 }
                 activePiece = null;
                 actionOccupied = null;
-                i = 0;
+                i = 16;
             }
         }
     }
@@ -85,7 +86,7 @@ async function run() {
             perSecondLoop();
         }
 
-        if (i === 15) {
+        if (i === 0) {
             if (collapsingMatches) {
                 collapseMatches();
             }
