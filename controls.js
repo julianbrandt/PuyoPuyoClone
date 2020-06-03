@@ -68,6 +68,7 @@ function touchend(e) {
 
 
 function touchmove(e) {
+    e.preventDefault();
     if (activePiece === null) {
         e.touches = [];
         return;
