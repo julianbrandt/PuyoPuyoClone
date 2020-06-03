@@ -1,16 +1,12 @@
 let ctx, canvas, squareSize, board, matchBoard, boardFrameCoords, sidebarWidth;
+let boardSize, popChainPointTable, insertPosition, colors, nextPiece;
 let canvasPadding = 3;
 let squareLineWidth = 2;
 let boardFrameWidth = 2;
 let boardLineWidth = 2;
-let colors = ["Crimson", "DodgerBlue", "LimeGreen", "Gold", "MediumSlateBlue"];
 let activePiece = null;
 let actionOccupied = false;
-let boardSize = [6, 12]
-let insertPosition = [Math.floor((boardSize[0]-1)/2), 0];
-let popChainPointTable = [1, 8, 16, 32, 64, 128, 256, 512, 999];
 let points = 0;
-let nextPiece = generatePiece();
 let movingDown = false;
 let touchedActivePiece = false;
 let touchMoved = false;
@@ -46,8 +42,22 @@ function setBoardFrameCoords() {
 }
 
 
+function setGameVariables(
+        _boardSize=[6, 12],
+        _insertPosition=null,
+        _popChainPointTable=[1, 8, 16, 32, 64, 128, 256, 512, 999],
+        _colors=["Crimson", "DodgerBlue", "LimeGreen", "Gold", "MediumSlateBlue"]
+    ) {
+    boardSize = _boardSize;
+    if (_insertPosition === null) insertPosition = [Math.floor((_boardSize[0]-1)/2), 0];
+    else insertPosition = _insertPosition;
+    popChainPointTable = _popChainPointTable;
+    colors = _colors;
+    nextPiece = generatePiece();
+}
+
+
 function setSizeVariables() {
-    console.log("settings size variables");
     setCanvasSize();
     setSidebarWidth();
     setSquareSize();
@@ -59,6 +69,7 @@ function setSizeVariables() {
 function init() {
     canvas = document.getElementById("canvas");
     ctx = canvas.getContext("2d");
+    setGameVariables();
     setSizeVariables();
     board = createBoard();
 }
@@ -160,39 +171,6 @@ function generatePiece() {
 }
 
 
-function insertPiece(piece) {
-    piece.a.pos = [insertPosition[0], insertPosition[1]];
-    piece.b.pos = [insertPosition[0], insertPosition[1]+1];
-    board[piece.a.pos[0]][piece.a.pos[1]] = piece.a;
-    board[piece.b.pos[0]][piece.b.pos[1]] = piece.b;
-    return piece;
-}
-
-
-function coordFromSquare(x, y) {
-    return [
-        boardFrameCoords.x + squareSize * x,
-        boardFrameCoords.y + squareSize * y
-        ];
-}
-
-
-function squareOfCanvasCoord(x, y) {
-    x -= boardFrameCoords.x
-    y -= boardFrameCoords.y
-    x = Math.floor(x / squareSize);
-    y = Math.floor(y / squareSize);
-    return [x, y];
-}
-
-
-function coordOnActivePiece(x, y) {
-    let square = squareOfCanvasCoord(x, y);
-    return (square[0] === activePiece.a.pos[0] && square[1] === activePiece.a.pos[1] ||
-        square[0] === activePiece.b.pos[0] && square[1] === activePiece.b.pos[1]);
-}
-
-
 function drawBoard(matches) {
     ctx.lineWidth = 0;
     ctx.fillStyle = "white";
@@ -234,47 +212,6 @@ function sleep(ms) {
 }
 
 
-function movePiece(piece, direction) {
-    board[piece.a.pos[0]][piece.a.pos[1]] = 0;
-    board[piece.b.pos[0]][piece.b.pos[1]] = 0;
-    switch (direction) {
-        case "left":
-            piece.a.pos[0] = piece.a.pos[0] - 1;
-            piece.b.pos[0] = piece.b.pos[0] - 1;
-            break;
-        case "right":
-            piece.a.pos[0] = piece.a.pos[0] + 1;
-            piece.b.pos[0] = piece.b.pos[0] + 1;
-            break;
-        case "down":
-            piece.a.pos[1] = piece.a.pos[1] + 1;
-            piece.b.pos[1] = piece.b.pos[1] + 1;
-            break;
-    }
-    board[piece.a.pos[0]][piece.a.pos[1]] = piece.a;
-    board[piece.b.pos[0]][piece.b.pos[1]] = piece.b;
-    return piece;
-}
-
-
-function closer(piece, direction) {
-    switch (direction) {
-        case "left":
-            if (piece.a.pos[0] <= piece.b.pos[0]) return piece.a;
-            else return piece.b;
-        case "right":
-            if (piece.a.pos[0] >= piece.b.pos[0]) return piece.a;
-            else return piece.b;
-        case "up":
-            if (piece.a.pos[1] <= piece.b.pos[1]) return piece.a;
-            else return piece.b
-        case "down":
-            if (piece.a.pos[1] >= piece.b.pos[1]) return piece.a;
-            else return piece.b;
-    }
-}
-
-
 function pressedLeft() {
     if (activePiece !== null) {
         attemptMovePiece(activePiece, "left");
@@ -299,179 +236,6 @@ function liftedDown() {
 }
 
 
-function emptyInDirection(piece, direction) {
-    switch (direction) {
-        case "down":
-            if (
-                piece.direction === "horizontal" &&
-                piece.a.pos[1] < boardSize[1] &&
-                board[piece.a.pos[0]][piece.a.pos[1] + 1] === 0 &&
-                board[piece.b.pos[0]][piece.b.pos[1] + 1] === 0
-            ) return true;
-            else {
-                return (
-                    piece.direction === "vertical" &&
-                    closer(piece, "down").pos[1] < boardSize[1] &&
-                    board[closer(piece, "down").pos[0]][closer(piece, "down").pos[1] + 1] === 0
-                );
-            }
-        case "right":
-            if (
-                piece.direction === "horizontal" &&
-                closer(piece, "right").pos[0] + 1 < boardSize[0] &&
-                board[closer(piece, "right").pos[0] + 1][closer(piece, "right").pos[1]] === 0
-            ) return true;
-            else
-                return (
-                    piece.direction === "vertical" &&
-                    piece.a.pos[0] + 1 < boardSize[0] &&
-                    board[piece.a.pos[0] + 1][piece.a.pos[1]] === 0 &&
-                    board[piece.b.pos[0] + 1][piece.b.pos[1]] === 0
-                );
-        case "left":
-            if (
-                piece.direction === "horizontal" &&
-                closer(piece, "left").pos[0] > 0 &&
-                board[closer(piece, "left").pos[0] - 1][closer(piece, "left").pos[1]] === 0
-            ) return true;
-            else
-                return (
-                    piece.direction === "vertical" &&
-                    piece.a.pos[0] > 0 &&
-                    board[piece.a.pos[0] - 1][piece.a.pos[1]] === 0 &&
-                    board[piece.b.pos[0] - 1][piece.b.pos[1]] === 0
-                );
-
-    }
-}
-
-
-function emptyInDirectionSingle(piece, direction) {
-    switch (direction) {
-        case "up":
-            return piece.pos[1] > 0;
-        case "down":
-            return (
-                piece.pos[1] + 1 < boardSize[1] &&
-                board[piece.pos[0]][piece.pos[1] + 1] === 0
-            );
-        case "right":
-            return (
-                piece.pos[0] + 1 < boardSize[0] &&
-                board[piece.pos[0] + 1][piece.pos[1]] === 0
-            );
-        case "left":
-            return (
-                piece.pos[0] - 1 > 0 &&
-                board[piece.pos[0] - 1][piece.pos[1]] === 0
-            );
-    }
-}
-
-
-function attemptMovePiece(piece, direction) {
-    if (emptyInDirection(piece, direction)) {
-        return movePiece(piece, direction);
-    }
-    else {
-        return piece;
-    }
-}
-
-
-function rotate(piece) {
-    board[piece.a.pos[0]][piece.a.pos[1]] = 0;
-    board[piece.b.pos[0]][piece.b.pos[1]] = 0;
-    if (piece.direction === "vertical") {
-        if (piece.a.pos[1] < piece.b.pos[1]) {
-            if (emptyInDirection(piece, "right")) {
-                piece.a.pos[0] = piece.a.pos[0] + 1;
-                piece.a.pos[1] = piece.a.pos[1] + 1;
-                piece.direction = "horizontal";
-            }
-            else {
-                if (emptyInDirectionSingle(piece.a, "right")) {
-                    piece.a.pos[0] = piece.a.pos[0] + 1;
-                    piece.b.pos[1] = piece.b.pos[1] - 1;
-                    piece.direction = "horizontal";
-                }
-                else if (emptyInDirectionSingle(piece.a, "left")) {
-                    piece.b.pos[0] = piece.b.pos[0] - 1;
-                    piece.b.pos[1] = piece.b.pos[1] - 1;
-                    piece.direction = "horizontal";
-                }
-            }
-        }
-        else {
-            if (emptyInDirection(piece, "left")) {
-                if (emptyInDirection(piece, "down")) {
-                    piece.a.pos[0] = piece.a.pos[0] - 1;
-                    piece.a.pos[1] = piece.a.pos[1] - 1;
-                    piece.direction = "horizontal";
-                }
-                else {
-                    piece.a.pos[0] = piece.a.pos[0] - 1;
-                    piece.b.pos[1] = piece.b.pos[1] + 1;
-                    piece.direction = "horizontal";
-                }
-            }
-            else {
-                if (emptyInDirectionSingle(piece.b, "left")) {
-                    piece.a.pos[0] = piece.a.pos[0] - 1;
-                    piece.a.pos[1] = piece.a.pos[1] - 1;
-                    piece.direction = "horizontal";
-                }
-                else if (emptyInDirectionSingle(piece.a, "right")) {
-                    piece.b.pos[0] = piece.b.pos[0] + 1;
-                    piece.b.pos[1] = piece.b.pos[1] + 1;
-                    piece.direction = "horizontal";
-                }
-                else if (emptyInDirectionSingle(piece.b, "right")) {
-                    piece.b.pos[0] = piece.b.pos[0] + 1;
-                    piece.a.pos[1] = piece.a.pos[1] - 1;
-                    piece.direction = "horizontal";
-                }
-            }
-        }
-    }
-    else {
-        if (piece.a.pos[0] < piece.b.pos[0]) {
-            if (emptyInDirectionSingle(piece.b, "up")) {
-                piece.a.pos[0] = piece.a.pos[0] + 1;
-                piece.a.pos[1] = piece.a.pos[1] - 1;
-                piece.direction = "vertical";
-            }
-            else if (emptyInDirectionSingle(piece.b, "down")) {
-                piece.a.pos[0] = piece.a.pos[0] + 1;
-                piece.b.pos[1] = piece.b.pos[1] + 1;
-                piece.direction = "vertical";
-            }
-            else if (emptyInDirectionSingle(piece.a, "down")) {
-                piece.b.pos[0] = piece.b.pos[0] - 1;
-                piece.b.pos[1] = piece.b.pos[1] + 1;
-                piece.direction = "vertical";
-            }
-        }
-        else {
-            if (emptyInDirectionSingle(piece.b, "down")) {
-                piece.a.pos[0] = piece.a.pos[0] - 1;
-                piece.a.pos[1] = piece.a.pos[1] + 1;
-                piece.direction = "vertical";
-            }
-            else if (emptyInDirectionSingle(piece.b, "up")) {
-                piece.a.pos[0] = piece.a.pos[0] - 1;
-                piece.b.pos[1] = piece.b.pos[1] - 1;
-                piece.direction = "vertical";
-            }
-        }
-    }
-    board[piece.a.pos[0]][piece.a.pos[1]] = piece.a;
-    board[piece.b.pos[0]][piece.b.pos[1]] = piece.b;
-
-    return piece;
-}
-
-
 function postRotationOffsets(piece) {
     if (piece.direction === "vertical") {
         if (piece.a.pos[1] < piece.b.pos[1]) {
@@ -492,110 +256,6 @@ function postRotationOffsets(piece) {
 }
 
 
-function commitToBoard(piece) {
-    board[piece.a.pos[0]][piece.a.pos[1]] = piece.a.color;
-    board[piece.b.pos[0]][piece.b.pos[1]] = piece.b.color;
-}
-
-
-function insideBoard(coords) {
-    return !(coords[0] < 0 || coords[0] > boardSize[0]-1 || coords[1] < 0 || coords[1] > boardSize[1]-1);
-}
-
-
-function checkNeighbors(origin, value) {
-    let matches = [];
-    matches.push(origin);
-    matchBoard[origin[0]][origin[1]] = 1;
-    if (insideBoard([origin[0]-1, origin[1]]) && matchBoard[origin[0]-1][origin[1]] === 0) {
-        if (board[origin[0]-1][origin[1]] === value) {
-            checkNeighbors([origin[0]-1, origin[1]], value, matchBoard).forEach(e => matches.push(e));
-        }
-    }
-    if (insideBoard([origin[0]+1, origin[1]]) && matchBoard[origin[0]+1][origin[1]] === 0) {
-        if (board[origin[0]+1][origin[1]] === value) {
-            (checkNeighbors([origin[0]+1, origin[1]], value, matchBoard)).forEach(e => matches.push(e));
-        }
-    }
-    if (insideBoard([origin[0], origin[1]-1]) && matchBoard[origin[0]][origin[1]-1] === 0) {
-        if (board[origin[0]][origin[1]-1] === value) {
-            (checkNeighbors([origin[0], origin[1]-1], value, matchBoard)).forEach(e => matches.push(e));
-        }
-    }
-    if (insideBoard([origin[0], origin[1]+1]) && matchBoard[origin[0]][origin[1]+1] === 0) {
-        if (board[origin[0]][origin[1]+1] === value) {
-            (checkNeighbors([origin[0], origin[1]+1], value, matchBoard)).forEach(e => matches.push(e));
-        }
-    }
-    return matches;
-}
-
-
-function findMatches() {
-    matchBoard = createBoard();
-    let matches = [];
-    for (let i = 0; i < board.length; i++) {
-        for (let j = 0; j < board[0].length; j++) {
-            if (board[i][j] === 0) {
-                matchBoard[i][j] = 1;
-            }
-        }
-    }
-    for (let i = 0; i < board.length; i++) {
-        for (let j = 0; j < board[0].length; j++) {
-            if (matchBoard[i][j] === 0) {
-                let match = checkNeighbors([i, j], board[i][j], matchBoard);
-                for (let k = 0; k < match.length; k++) {
-                    matchBoard[match[k][0]][match[k][1]] = 1;
-                }
-                if (match.length >= 4) {
-                    for (let k = 0; k < match.length; k++) {
-                        matches.push(match[k]);
-                    }
-                }
-            }
-        }
-    }
-    return matches;
-}
-
-
-function popMatches(matches) {
-    for (let i = 0; i < matches.length; i++) {
-        board[matches[i][0]][matches[i][1]] = 0;
-    }
-    return matches.length;
-}
-
-
-function updateBoard() {
-    for (let i = 0; i < boardSize[0]; i++) {
-        let running = true;
-        while (running) {
-            let firstEmpty = null;
-            for (let j = boardSize[1]-1; j >= 0; j--) {
-                if (board[i][j] === 0 && firstEmpty === null) {
-                    if (j === 0) {
-                        running = false;
-                        break;
-                    }
-                    firstEmpty = j;
-                }
-                else if (board[i][j] !== 0 && firstEmpty !== null) {
-                    board[i][firstEmpty] = board[i][j];
-                    board[i][j] = 0;
-                    break;
-                }
-                else if (j === 0) {
-                    running = false;
-                    break;
-                }
-            }
-        }
-    }
-}
-
-
 function pointSound(effectNum) {
     let sfx = new Audio("sounds/pop" + effectNum + ".wav");
     sfx.volume = 0.3;
@@ -609,8 +269,8 @@ function soundByPoints(chain) {
 
 
 function calculatePoints(pops, popChain) {
-    if (popChain > 8) {
-        popChain = 8;
+    if (popChain > popChainPointTable.length-1) {
+        popChain = popChainPointTable.length-1;
     }
     return pops * 10 * popChainPointTable[popChain];
 }
@@ -618,115 +278,4 @@ function calculatePoints(pops, popChain) {
 
 function formatPointIncrement(pops, popChain) {
     return pops * 10 + "x" + popChainPointTable[popChain];
-}
-
-
-async function run() {
-    let i = 0;
-    let moveTick = 0;
-    let currentMatches = [];
-    let collapsingMatches = false;
-    let popPoints = 0;
-    let popChain = 0;
-    let fps = 30;
-    let speedUpTick = fps - 1;
-
-    function collapseMatches() {
-        let pops = popMatches(currentMatches);
-        points += calculatePoints(pops, popChain);
-        formatPointIncrement();
-        soundByPoints(popChain);
-        popChain++;
-        currentMatches = [];
-        updateBoard();
-        let newMatches = findMatches();
-        for (let i = 0; i < newMatches.length; i++) {
-            currentMatches.push(newMatches[i]);
-        }
-        if (currentMatches.length === 0)
-        {
-            collapsingMatches = false;
-            if (speedUpTick > 1) {
-                speedUpTick = Math.max(speedUpTick * 0.9, 1);
-            }
-        }
-        moveTick = 0;
-    }
-
-
-    function moveDown() {
-        if (activePiece !== null) {
-            if (emptyInDirection(activePiece, "down")) {
-                activePiece = attemptMovePiece(activePiece, "down");
-            }
-            else {
-                commitToBoard(activePiece);
-                updateBoard();
-                let newMatches = findMatches();
-                for (let i = 0; i < newMatches.length; i++) {
-                    currentMatches.push(newMatches[i]);
-                }
-                activePiece = null;
-                actionOccupied = null;
-                i = 0;
-            }
-        }
-    }
-
-
-    function perSecondLoop() {
-        if (!actionOccupied) {
-            if (currentMatches.length > 0) {
-                collapsingMatches = true;
-            }
-            else if (board[insertPosition[0]][insertPosition[1]] === 0 && board[insertPosition[0]][insertPosition[1]+1] === 0) {
-                activePiece = insertPiece(nextPiece);
-                moveTick = 0;
-                nextPiece = generatePiece();
-                popPoints = 0;
-                popChain = 0;
-                actionOccupied = true;
-                touchedActivePiece = false;
-                touchMoved = false;
-                i = 0;
-            }
-            else {
-                return false;
-            }
-        }
-        return true;
-    }
-
-
-    while(1) {
-        drawBoard(currentMatches);
-        if (i === 0)  {
-            if (!board[insertPosition[0]].slice(1, board[0].length-1).includes(0)) {
-                console.log("quitting");
-                break;
-            }
-            perSecondLoop();
-        }
-
-        if (i === 15) {
-            if (collapsingMatches) {
-                collapseMatches();
-            }
-        }
-
-        if (movingDown && activePiece !== null) {
-            moveDown();
-            points += 1;
-        }
-
-        moveTick++;
-        if (moveTick === Math.floor(speedUpTick)) {
-            moveDown();
-            moveTick = 0;
-        }
-        i++;
-        if (i >= fps) i = 0;
-
-        await sleep(33);
-    }
 }

@@ -6,27 +6,27 @@ window.mobileCheck = function() {
 
 function keydown(e) {
     if (e.repeat) {
-        if (`${e.code}` === "ArrowRight") {
+        if (`${e.code}` === "ArrowRight" || `${e.code}` === "KeyD") {
             pressedRight();
         }
-        if (`${e.code}` === "ArrowLeft") {
+        if (`${e.code}` === "ArrowLeft" || `${e.code}` === "KeyA") {
             pressedLeft();
         }
     }
     else {
-        if (`${e.code}` === "ArrowRight") {
+        if (`${e.code}` === "ArrowRight" || `${e.code}` === "KeyD") {
             pressedRight();
         }
-        if (`${e.code}` === "ArrowLeft") {
+        if (`${e.code}` === "ArrowLeft" || `${e.code}` === "KeyA") {
             pressedLeft();
         }
-        if (`${e.code}` === "ArrowUp") {
+        if (`${e.code}` === "ArrowUp" || `${e.code}` === "KeyW") {
             if (activePiece !== null) {
                 rotate(activePiece);
                 activePiece.rotating = true;
             }
         }
-        if (`${e.code}` === "ArrowDown") {
+        if (`${e.code}` === "ArrowDown" || `${e.code}` === "KeyS") {
             pressedDown();
         }
     }
@@ -34,7 +34,7 @@ function keydown(e) {
 
 
 function keyup(e) {
-    if (`${e.code}` === "ArrowDown") {
+    if (`${e.code}` === "ArrowDown" || `${e.code}` === "KeyS") {
         liftedDown();
     }
 }
