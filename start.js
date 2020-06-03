@@ -7,5 +7,7 @@ canvas.ontouchstart = function (e) {touchstart(e)};
 canvas.ontouchend = function (e) {touchend(e)};
 canvas.ontouchmove = function (e) {touchmove(e)};
 
-
-run();
+if (mobileCheck()) {
+    document.getElementById("advanced_settings").disabled = true;
+    document.getElementById("2p").disabled = true;
+}

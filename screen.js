@@ -117,6 +117,7 @@ function drawSidebar() {
 
 
 function drawBoardFrame() {
+    ctx.strokeStyle = "lightgray";
     ctx.lineWidth = boardFrameWidth;
     ctx.strokeRect(
         boardFrameCoords.x,
@@ -125,7 +126,6 @@ function drawBoardFrame() {
         board[0].length * squareSize
     );
     ctx.lineWidth = boardLineWidth;
-    ctx.strokeStyle = "lightgray";
     ctx.beginPath();
     for (let i = 1; i < board.length; i++) {
         let x = boardFrameCoords.x + squareSize * i;

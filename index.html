@@ -13,5 +13,14 @@
     <body onresize="setSizeVariables()">
         <canvas id="canvas"></canvas>
         <script src="start.js"></script>
+        <div class="menu">
+            <div class="input-row">
+                <input id="advanced_settings" type="button" value="Advanced Settings" onclick="run()" />
+            </div>
+            <div class="input-row">
+                <input id="1p" type="button" value="1 Player Endless" onclick="startSinglePlayer()" />
+                <input id="2p" type="button" value="2 Player Versus" onclick="run()" />
+            </div>
+        </div>
     </body>
 </html>

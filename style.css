@@ -2,7 +2,55 @@ body {
     height: 100vh;
     width: 100vw;
     margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+
+.menu {
+    z-index: 1;
+    position: absolute;
+    background-color: #ffffff90;
+    margin: 0;
+    padding: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+}
+
+
+.input-row {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
+
+.input-row > input[type=button] {
+    width: 100%;
+    padding: 10px 30px;
+    margin: 5px;
+    border-radius: 5px;
+    border: none;
+    background-color: #666;
+    color: #fff;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+
+.input-row > input[type=button]:hover:enabled {
+    background-color: #aaa;
+    color: #666;
+}
+
+
+.input-row > input[type=button]:disabled {
+    background-color: #ccc;
+    color: #eee;
+    cursor: auto;
 }
