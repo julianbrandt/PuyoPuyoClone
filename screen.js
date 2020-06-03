@@ -77,7 +77,7 @@ function init() {
 
 
 function reInit() {
-    setGameVariables(boardSize, insertPosition, popChainPointTable, colors);
+    setGameVariables(boardSize, [Math.floor((boardSize[0]-1)/2), 0], popChainPointTable, colors);
     setSizeVariables();
     board = createBoard();
 }
